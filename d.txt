@@ -1,0 +1,294 @@
+### Problema01.a
+#include <iostream>
+#include <vector>
+using namespace std;
+
+// Función que resuelve el problema de la mochila 0/1
+pair<int, vector<int>> knapsack(const vector<int> &weights,
+                                const vector<int> &values, int W) {
+  int n = weights.size();
+  vector<vector<int>> dp(n + 1, vector<int>(W + 1, 0));
+
+  // Llenado de la matriz dp
+  for (int i = 1; i <= n; ++i) {
+    for (int w = 0; w <= W; ++w) {
+      if (weights[i - 1] <= w) {
+        dp[i][w] =
+            max(dp[i - 1][w], dp[i - 1][w - weights[i - 1]] + values[i - 1]);
+      } else {
+        dp[i][w] = dp[i - 1][w];
+      }
+    }
+  }
+
+  // El máximo beneficio está en dp[n][W]
+  int max_benefit = dp[n][W];
+
+  // Reconstrucción de la solución
+  vector<int> selected_items;
+  int w = W;
+  for (int i = n; i > 0; --i) {
+    if (dp[i][w] != dp[i - 1][w]) {
+      selected_items.push_back(i);
+      w -= weights[i - 1];
+    }
+  }
+
+  return {max_benefit, selected_items};
+}
+
+int main() {
+  // Datos del problema
+  vector<int> weights = {3, 7, 4, 2, 1, 6};
+  vector<int> values = {12, 3, 7, 4, 3, 8};
+  int W = 15;
+
+  auto result = knapsack(weights, values, W);
+  int max_benefit = result.first;
+  vector<int> selected_items = result.second;
+
+  cout << "El beneficio máximo es: " << max_benefit << endl;
+  cout << "Los objetos seleccionados son: ";
+  for (int item : selected_items) {
+    cout << item << " ";
+  }
+  cout << endl;
+
+  return 0;
+}
+### Problema02
+
+#include <iostream>
+#include <unordered_map>
+#include <vector>
+
+using namespace std;
+
+// Función para inicializar el mapa de orden
+unordered_map<char, int> initializeOrderMap(const vector<char> &order) {
+  unordered_map<char, int> orderMap;
+  for (int i = 0; i < order.size(); ++i) {
+    orderMap[order[i]] = i;
+  }
+  return orderMap;
+}
+
+// Función para verificar si u precede a v en el orden Φ
+bool precedes(char u, char v, const unordered_map<char, int> &orderMap) {
+  return orderMap.at(u) < orderMap.at(v);
+}
+
+int main() {
+  // Definición del alfabeto y su orden
+  vector<char> order = {'a', 'b', 'c', 'd'};
+
+  // Inicialización del mapa de orden
+  unordered_map<char, int> orderMap = initializeOrderMap(order);
+
+  // Ejemplos de uso
+  char u = 'a';
+  char v = 'c';
+
+  if (precedes(u, v, orderMap)) {
+    cout << u << " precede a " << v << " en el orden Φ" << endl;
+  } else {
+    cout << u << " no precede a " << v << " en el orden Φ" << endl;
+  }
+
+  u = 'd';
+  v = 'b';
+
+  if (precedes(u, v, orderMap)) {
+    cout << u << " precede a " << v << " en el orden Φ" << endl;
+  } else {
+    cout << u << " no precede a " << v << " en el orden Φ" << endl;
+  }
+
+  return 0;
+}
+### Problema03
+### Problema04
+
+#include <algorithm>
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+vector<int> longestIncreasingSubsequence(const vector<int> &V) {
+  int n = V.size();
+  if (n == 0)
+    return {};
+
+  vector<int> dp(n, 1);
+  vector<int> prev(n, -1);
+
+  // Llenado de la matriz dp y el array prev
+  for (int i = 1; i < n; ++i) {
+    for (int j = 0; j < i; ++j) {
+      if (V[j] < V[i] && dp[i] < dp[j] + 1) {
+        dp[i] = dp[j] + 1;
+        prev[i] = j;
+      }
+    }
+  }
+
+  // Encontrar el índice del máximo valor en dp
+  int maxIndex = 0;
+  for (int i = 1; i < n; ++i) {
+    if (dp[i] > dp[maxIndex]) {
+      maxIndex = i;
+    }
+  }
+
+  // Reconstruir la subsecuencia
+  vector<int> lis;
+  for (int i = maxIndex; i >= 0; i = prev[i]) {
+    lis.push_back(V[i]);
+    if (prev[i] == -1)
+      break;
+  }
+
+  reverse(lis.begin(), lis.end());
+  return lis;
+}
+
+int main() {
+  vector<int> V = {11, 17, 5, 8, 6, 4, 7, 12, 3};
+
+  vector<int> lis = longestIncreasingSubsequence(V);
+
+  cout << "La secuencia creciente de máxima longitud es: ";
+  for (int num : lis) {
+    cout << num << " ";
+  }
+  cout << endl;
+
+  return 0;
+}
+### Problema05
+
+#include <algorithm>
+#include <cmath>
+#include <iostream>
+#include <limits.h>
+#include <vector>
+
+using namespace std;
+
+// Función para encontrar el camino más corto en el problema del viajante de
+// comercio
+int tsp(const vector<vector<int>> &dist) {
+  int n = dist.size();
+  int VISITED_ALL = (1 << n) - 1;
+  vector<vector<int>> dp(n, vector<int>(1 << n, INT_MAX));
+
+  // Base case: Starting at node 0, cost is 0
+  dp[0][1] = 0;
+
+  // Iterate over all subsets of the nodes
+  for (int mask = 1; mask < (1 << n); ++mask) {
+    for (int u = 0; u < n; ++u) {
+      if (mask & (1 << u)) { // If u is in the subset represented by mask
+        for (int v = 0; v < n; ++v) {
+          if ((mask & (1 << v)) &&
+              u != v) { // If v is in the subset and v is not u
+            dp[u][mask] = min(dp[u][mask], dp[v][mask ^ (1 << u)] + dist[v][u]);
+          }
+        }
+      }
+    }
+  }
+
+  // The answer is the minimum cost to visit all nodes starting and ending at
+  // node 0
+  int result = INT_MAX;
+  for (int i = 1; i < n; ++i) {
+    result = min(result, dp[i][VISITED_ALL] + dist[i][0]);
+  }
+
+  return result;
+}
+
+int main() {
+  // Ejemplo de matriz de distancias
+  vector<vector<int>> dist = {
+      {0, 10, 15, 20}, {10, 0, 35, 25}, {15, 35, 0, 30}, {20, 25, 30, 0}};
+
+  int result = tsp(dist);
+  cout << "La longitud del circuito hamiltoniano minimal es: " << result
+       << endl;
+
+  return 0;
+}
+### Problema06
+
+#include <iostream>
+#include <string>
+#include <vector>
+
+using namespace std;
+
+bool isPossibleToGetA(const string &x) {
+  int n = x.size();
+  vector<vector<vector<bool>>> dp(
+      n, vector<vector<bool>>(n, vector<bool>(3, false)));
+
+  // Mapeo de caracteres a índices
+  auto charToIndex = [](char c) {
+    switch (c) {
+    case 'a':
+      return 0;
+    case 'b':
+      return 1;
+    case 'c':
+      return 2;
+    default:
+      return -1;
+    }
+  };
+
+  // Tabla de multiplicación
+  vector<vector<int>> multiplicationTable = {
+      {1, 1, 0}, // a * a = b, a * b = b, a * c = a
+      {2, 1, 0}, // b * a = c, b * b = b, b * c = a
+      {0, 2, 2}  // c * a = a, c * b = c, c * c = c
+  };
+
+  // Inicialización de dp para subcadenas de longitud 1
+  for (int i = 0; i < n; ++i) {
+    dp[i][i][charToIndex(x[i])] = true;
+  }
+
+  // Llenado de la tabla dp
+  for (int length = 2; length <= n; ++length) {
+    for (int i = 0; i <= n - length; ++i) {
+      int j = i + length - 1;
+      for (int k = i; k < j; ++k) {
+        for (int a = 0; a < 3; ++a) {
+          for (int b = 0; b < 3; ++b) {
+            if (dp[i][k][a] && dp[k + 1][j][b]) {
+              dp[i][j][multiplicationTable[a][b]] = true;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Verificar si es posible obtener 'a' en toda la cadena
+  return dp[0][n - 1][charToIndex('a')];
+}
+
+int main() {
+  string x = "abca";
+
+  if (isPossibleToGetA(x)) {
+    cout << "Es posible poner paréntesis en x para obtener 'a'." << endl;
+  } else {
+    cout << "No es posible poner paréntesis en x para obtener 'a'." << endl;
+  }
+
+  return 0;
+}
+### Problema07

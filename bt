@@ -1,0 +1,244 @@
+### Mochila Arbol Binario
+#include <iostream>
+#include <vector>
+
+const int n = 4;                   // Tamaño del arreglo s
+const int M = 7;                   // Valor máximo para pact
+std::vector<int> b = {2, 3, 4, 5}; // Valores del arreglo b
+std::vector<int> p = {1, 2, 3, 4}; // Valores del arreglo p
+
+std::vector<int> s(n);
+int nivel = 1;
+int voa = -100;
+std::vector<int> soa;
+int pact = 0;
+int bact = 0;
+
+void Generar(int nivel, std::vector<int> &s) {
+  s[nivel - 1] += 1;
+  pact += p[nivel - 1] * s[nivel - 1];
+  bact += b[nivel - 1] * s[nivel - 1];
+}
+
+bool Solucion(int nivel, const std::vector<int> &s) {
+  return (nivel == n) && (pact <= M);
+}
+
+bool Criterio(int nivel, const std::vector<int> &s) {
+  return (nivel < n) && (pact <= M);
+}
+
+bool MasHermanos(int nivel, const std::vector<int> &s) {
+  return s[nivel - 1] < 1;
+}
+
+void Retroceder(int &nivel, std::vector<int> &s) {
+  pact -= p[nivel - 1] * s[nivel - 1];
+  bact -= b[nivel - 1] * s[nivel - 1];
+  s[nivel - 1] = -1;
+  nivel -= 1;
+}
+
+void Backtracking(int nivel, std::vector<int> &s) {
+  if (nivel > n) {
+    return;
+  }
+
+  Generar(nivel, s);
+  if (Solucion(nivel, s) && (bact > voa)) {
+    voa = bact;
+    soa = s;
+  }
+
+  if (Criterio(nivel, s)) {
+    Backtracking(nivel + 1, s);
+  } else {
+    Backtracking(nivel + 1, s);
+    Retroceder(nivel, s);
+  }
+}
+
+int main() {
+  std::vector<int> s(n);
+
+  Backtracking(1, s);
+
+  // Imprimir la mejor solución encontrada
+  std::cout << "Mejor solución encontrada: ";
+  for (int i = 0; i < n; i++) {
+    std::cout << soa[i] << " ";
+  }
+  std::cout << std::endl;
+
+  return 0;
+}
+
+#################Mochila Combinatorio Mochila
+#include <iostream>
+#include <vector>
+
+const int n = 4;                   // Tamaño del arreglo s
+const int M = 7;                   // Valor máximo para pact
+std::vector<int> b = {2, 3, 4, 5}; // Valores del arreglo b
+std::vector<int> p = {1, 2, 3, 4}; // Valores del arreglo p
+
+std::vector<int> s(n);
+int nivel = 1;
+int voa = -100;
+std::vector<int> soa;
+int pact = 0;
+int bact = 0;
+
+void Generar(int nivel, std::vector<int> &s) {
+  s[nivel - 1] += 1;
+  pact += p[nivel - 1] * s[nivel - 1];
+  bact += b[nivel - 1] * s[nivel - 1];
+}
+
+bool Solucion(int nivel, const std::vector<int> &s) {
+  return (nivel == n) && (pact <= M);
+}
+
+bool Criterio(int nivel, const std::vector<int> &s) {
+  return (nivel < n) && (pact <= M);
+}
+
+bool MasHermanos(int nivel, const std::vector<int> &s) {
+  return s[nivel - 1] < 1;
+}
+
+void Retroceder(int &nivel, std::vector<int> &s) {
+  pact -= p[nivel - 1] * s[nivel - 1];
+  bact -= b[nivel - 1] * s[nivel - 1];
+  s[nivel - 1] = -1;
+  nivel -= 1;
+}
+
+void Backtracking(std::vector<int> &s) {
+  nivel = 1;
+  s.assign(n, -1);
+  voa = -100;
+  soa.clear();
+  pact = 0;
+  bact = 0;
+
+  do {
+    Generar(nivel, s);
+    if (Solucion(nivel, s) && (bact > voa)) {
+      voa = bact;
+      soa = s;
+    }
+    if (Criterio(nivel, s)) {
+      nivel += 1;
+    } else {
+      while (!MasHermanos(nivel, s) && (nivel > 0)) {
+        Retroceder(nivel, s);
+      }
+    }
+  } while (nivel != 0);
+}
+
+int main() {
+  std::vector<int> s(n);
+
+  Backtracking(s);
+
+  // Imprimir la mejor solución encontrada
+  std::cout << "Mejor solución encontrada: ";
+  for (int i = 0; i < n; i++) {
+    std::cout << soa[i] << " ";
+  }
+  std::cout << std::endl;
+
+  return 0;
+}
+
+
+#### Backtracking Combinatorio Mochila
+#include <iostream>
+using namespace std;
+#include<vector>
+#include <climits>
+void generar(vector<int>& s,int & nivel,int & pact,int & bact,vector<int>& peso,vector<int> & beneficio){
+  s[nivel - 1] = s[nivel - 1] + 1;
+  cout<<"s[nivel - 1]->"<<s[nivel - 1]<<endl;
+  cout<<"nivel->"<<nivel<<endl;
+  pact = pact + peso[nivel - 1] * s[nivel - 1];
+  bact = bact + beneficio[nivel - 1] * s[nivel - 1];
+}
+
+bool solucion(int nivel,int pact,int n, int m){
+  return ((nivel == n) && (pact <= m));
+}
+bool criterio(int nivel,int pact,int n, int m){
+  return (nivel < n) && (pact <= m);
+}
+bool mashermanos(vector<int>s,int nivel){
+  return (s[nivel-1] < 1);
+}
+void retroceder(vector<int>&s,int &nivel,int &pact,int &bact,vector<int>& peso,vector<int> & beneficio){
+  pact = pact - peso[nivel - 1] * s[nivel - 1];
+  bact = bact - beneficio[nivel - 1] * s[nivel - 1];
+  s[nivel - 1] = -1;
+  nivel = nivel - 1;
+}
+void mochilaback(vector<int>&peso,vector<int>&beneficio,int n,int m) {
+  
+  int pact = 0;
+  int bact = 0;
+  vector<int>s(n, -1);
+  vector<int> soa(n, 0);
+  int nivel = 1;
+  int voa = INT_MIN;
+  int vueltas=1;
+    while (nivel != 0) {
+      cout<<"vueltas->"<<vueltas<<endl;
+        generar(s,nivel,pact,bact,peso,beneficio);
+
+        if (solucion(nivel,pact,n,m) && (bact > voa)) {
+            voa = bact;
+            soa = s;
+        }
+
+        if (criterio(nivel,pact,n,m)) {
+            nivel += 1;
+
+        }
+        else {
+            while (!mashermanos(s,nivel) && (nivel > 0)) {
+                 retroceder(s,nivel,pact,bact,peso,beneficio);
+            }
+        }
+        
+        
+        cout<<endl;
+        vueltas++;
+        
+    }
+    int c=0;
+    int c1=0;
+    for (int i = 0; i < soa.size(); i++) {
+        
+        if(soa[i]==1){
+          c1=c1+peso[i];
+          c=c+beneficio[i];
+        }
+        
+    }
+  
+    cout<<"beneficio->"<<c<<endl;
+    cout<<"peso->"<<c1<<endl;
+  
+}
+
+int main()
+{
+  int n = 4;
+  int m = 7;
+  vector<int>peso = { 1,2,3,4 };
+  vector<int>beneficio = { 2,3,4,5 };
+  mochilaback(peso,beneficio,n,m);
+  
+}
+## Tareas Permutaciones Backtracking
+
