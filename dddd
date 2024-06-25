@@ -1,0 +1,973 @@
+
+############### B-Permu
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+vector<int> pesos = { 2, 3, 4, 5 };
+vector<int> beneficios = { 3, 4, 5, 6 };
+int capacidad = 5;
+
+int mejor_beneficio = 0;
+
+void permutaciones(vector<int>& indices, int inicio, int fin) {
+    if (inicio == fin) {
+        // Evaluamos la permutación actual
+        int beneficio_actual = 0;
+        int peso_actual = 0;
+        for (int i = 0; i < indices.size(); ++i) {
+            int index = indices[i];
+            if (peso_actual + pesos[index] <= capacidad) {
+                peso_actual += pesos[index];
+                beneficio_actual += beneficios[index];
+            }
+            else {
+                break; 
+            }
+        }
+
+        if (beneficio_actual > mejor_beneficio) {
+            mejor_beneficio = beneficio_actual;
+        }
+    }
+    else {
+        for (int i = inicio; i <= fin; ++i) {
+            swap(indices[inicio], indices[i]);
+            permutaciones(indices, inicio + 1, fin);
+            swap(indices[inicio], indices[i]);
+        }
+    }
+}
+
+int main() {
+    vector<int> indices(pesos.size());
+    for (int i = 0; i < pesos.size(); ++i) 
+        indices[i] = i;
+    
+
+    permutaciones(indices, 0, indices.size() - 1);
+    cout << "beneficio maximo: " << mejor_beneficio << endl;
+
+    return 0;
+}
+############### B-Combinatorio
+
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+
+vector<int> pesos = { 2, 3, 4, 5 }; 
+vector<int> beneficios = { 3, 4, 5, 6 }; 
+int capacidad = 5; 
+int mejor_beneficio = 0;
+
+void combinatorio(int nivel, int peso_actual, int beneficio_actual) {
+    if (nivel == pesos.size()) {
+        if (beneficio_actual > mejor_beneficio)
+            mejor_beneficio = beneficio_actual;
+        return;
+    }
+
+    if (peso_actual + pesos[nivel] <= capacidad) 
+        combinatorio(nivel + 1, peso_actual + pesos[nivel], beneficio_actual + beneficios[nivel]);
+
+    combinatorio(nivel + 1, peso_actual, beneficio_actual);
+}
+
+int main() {
+    combinatorio(0, 0, 0);
+    cout << "beneficio maximo: " << mejor_beneficio << endl;
+    return 0;
+}
+############### B-Binario
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+struct Nodo {
+    int nivel, peso, beneficio;
+    Nodo* izq;
+    Nodo* der;
+
+    Nodo(int nivel, int beneficio, int peso) {
+        this->nivel = nivel;
+        this->beneficio = beneficio;
+        this->peso = peso;
+        this->izq = nullptr;
+        this->der = nullptr;
+    }
+};
+
+vector<int> pesos = { 2, 3, 4, 5 };
+vector<int> beneficios = { 3, 4, 5, 6 };
+int capacidad = 5;
+int mejor_beneficio = 0;
+
+void backtrack(Nodo* nodo) {
+    if (nodo->nivel == pesos.size()) {
+        if (nodo->beneficio > mejor_beneficio) {
+            mejor_beneficio = nodo->beneficio;
+        }
+        return;
+    }
+
+    if (nodo->peso + pesos[nodo->nivel] <= capacidad) {
+        Nodo* incluir = new Nodo(nodo->nivel + 1, nodo->beneficio + beneficios[nodo->nivel], nodo->peso + pesos[nodo->nivel]);
+        backtrack(incluir);
+    }
+
+    Nodo* no_incluir = new Nodo(nodo->nivel + 1, nodo->beneficio, nodo->peso);
+    backtrack(no_incluir);
+}
+
+int main() {
+    Nodo* raiz = new Nodo(0, 0, 0);
+    backtrack(raiz);
+    cout << "beneficio maximo: " << mejor_beneficio << endl;
+
+    return 0;
+}
+############### Seubsecuencias
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+vector<int> subsecuencia(vector<int>& V) {
+    int n = V.size();
+    if (n == 0) return {};
+
+    vector<int> dp(n, 1);
+    vector<int> previous(n, -1);
+
+    int maxLength = 1;
+    int maxIndex = 0;
+
+    // Llenar el arreglo dp
+    for (int i = 1; i < n; ++i) {
+        for (int j = 0; j < i; ++j) {
+            if (V[j] < V[i] && dp[i] < dp[j] + 1) {
+                dp[i] = dp[j] + 1;
+                previous[i] = j;
+            }
+        }
+        if (dp[i] > maxLength) {
+            maxLength = dp[i];
+            maxIndex = i;
+        }
+    }
+
+    vector<int> lis;
+    for (int i = maxIndex; i >= 0; i = previous[i]) {
+        lis.push_back(V[i]);
+        if (previous[i] == -1) break;
+    }
+    reverse(lis.begin(), lis.end());
+
+    return lis;
+}
+
+int main() {
+    vector<int> V = { 11, 17, 5, 8, 6, 4, 7, 12, 3 };
+    vector<int> lis = subsecuencia(V);
+
+    cout << "La secuencia creciente de máxima longitud es: ";
+    for (int num : lis) {
+        cout << num << " ";
+    }
+    cout << endl;
+
+    return 0;
+}
+############### RECURSOS
+
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+
+int maxbeneficio(int n, int r, const vector<vector<int>>& N) {
+    vector<vector<int>> dp(r + 1, vector<int>(n + 1, 0));
+
+    for (int i = 1; i <= r; ++i) {
+        for (int j = 0; j <= n; ++j) {
+            dp[i][j] = dp[i - 1][j];
+            for (int k = 0; k <= j; ++k) {
+                dp[i][j] = max(dp[i][j], dp[i - 1][j - k] + N[i - 1][k]);
+            }
+        }
+    }
+
+    return dp[r][n];
+}
+
+int main() {
+    int n = 5;
+    int r = 3;
+
+    vector<vector<int>> N = {
+        {0, 1, 2, 3, 4, 5},
+        {0, 2, 4, 6, 8, 10},
+        {0, 1, 3, 6, 10, 15}
+    };
+
+    int max_benefit = maxbeneficio(n, r, N);
+
+    cout << "beneficio maximo: " << max_benefit << endl;
+
+    return 0;
+}
+############### Mochila
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <set>
+
+using namespace std;
+
+int mochila(int W, vector<int>& weights, vector<int>& benefits) {
+    int n = weights.size();
+    vector<vector<int>> dp(n + 1, vector<int>(W + 1, 0));
+
+    for (int i = 1; i <= n; ++i) {
+        for (int w = 0; w <= W; ++w) {
+            if (weights[i - 1] <= w) {
+                dp[i][w] = max(dp[i - 1][w], dp[i - 1][w - weights[i - 1]] + benefits[i - 1]);
+            }
+            else {
+                dp[i][w] = dp[i - 1][w];
+            }
+        }
+    }
+    return dp[n][W];
+}
+
+void todo(int W, vector<int>& weights, vector<int>& benefits) {
+    int n = weights.size();
+    vector<vector<int>> dp(n + 1, vector<int>(W + 1, 0));
+    vector<vector<set<int>>> solutions(n + 1, vector<set<int>>(W + 1));
+
+    for (int i = 1; i <= n; ++i) {
+        for (int w = 0; w <= W; ++w) {
+            if (weights[i - 1] <= w) {
+                if (dp[i - 1][w] > dp[i - 1][w - weights[i - 1]] + benefits[i - 1]) {
+                    dp[i][w] = dp[i - 1][w];
+                    solutions[i][w] = solutions[i - 1][w];
+                } else if (dp[i - 1][w] < dp[i - 1][w - weights[i - 1]] + benefits[i - 1]) {
+                    dp[i][w] = dp[i - 1][w - weights[i - 1]] + benefits[i - 1];
+                    solutions[i][w] = solutions[i - 1][w - weights[i - 1]];
+                    solutions[i][w].insert(i - 1);
+                } else {
+                    dp[i][w] = dp[i - 1][w];
+                    solutions[i][w] = solutions[i - 1][w];
+                    solutions[i][w].insert(solutions[i - 1][w - weights[i - 1]].begin(), solutions[i - 1][w - weights[i - 1]].end());
+                    solutions[i][w].insert(i - 1);
+                }
+            } else {
+                dp[i][w] = dp[i - 1][w];
+                solutions[i][w] = solutions[i - 1][w];
+            }
+        }
+    }
+
+    // Imprimir todas las soluciones óptimas
+    set<int> optimalItems = solutions[n][W];
+    for (auto item : optimalItems) {
+        cout << item + 1 << " ";
+    }
+    cout << endl;
+}
+
+int main() {
+    vector<int> weights = { 3, 7, 4, 2, 1, 6 };
+    vector<int> benefits = { 12, 3, 7, 4, 3, 8 };
+    int W = 15;
+    cout << "Max beneficio: " << mochila(W, weights, benefits) << endl;
+    return 0;
+}
+############### Aldabeto
+#include <iostream>
+#include <vector>
+#include <map>
+using namespace std;
+
+
+vector<char> alfabeto = { 'a', 'b', 'c', 'd' };
+map<char, int> orden = { {'a', 0}, {'b', 1}, {'c', 2}, {'d', 3} };
+
+bool f(char x, char y) {
+    return orden[x] + 1 == orden[y];
+}
+
+
+bool precedeonoprecede(char u, char v) {
+    int n = alfabeto.size();
+    vector<vector<bool>> dp(n, vector<bool>(n, false));
+
+    for (int i = 0; i < n; ++i) {
+        for (int j = i + 1; j < n; ++j) {
+            if (f(alfabeto[i], alfabeto[j])) {
+                dp[orden[alfabeto[i]]][orden[alfabeto[j]]] = true;
+            }
+        }
+    }
+
+    return dp[orden[u]][orden[v]];
+}
+
+int main() {
+    char u = 'a';
+    char v = 'd';
+    if (precedeonoprecede(u, v)) 
+        cout << "la '" << u << "' precede directamente a la '" << v << "'";
+    else cout << "la '" << u << "' no precede directamente a la '" << v << "'";
+    return 0;
+}
+############### Problema 01
+############### Problema 01
+############### Problema 01
+############### Problema 03 a
+#include <iostream>
+#include <vector>
+using namespace std;
+
+double calculateProbabilityFixedP(int n, double P) {
+    std::vector<std::vector<double>> prob(n + 1, std::vector<double>(n + 1, 0.0));
+
+    for (int i = 0; i <= n; ++i) {
+        prob[i][0] = 1.0;
+        prob[0][i] = 0.0;
+    }
+
+    for (int i = 1; i <= n; ++i) {
+        for (int j = 1; j <= n; ++j) {
+            prob[i][j] = P * prob[i - 1][j] + (1 - P) * prob[i][j - 1];
+        }
+    }
+    return prob[n][n];
+}
+
+int main() {
+    int n;
+    double P;
+    cout << "Ingrese el número de victorias necesarias (n): ";
+    cin >> n;
+    cout << "Ingrese la probabilidad fija P de que Informáticos CB gane un partido: ";
+    cin >> P;
+
+    double result = calculateProbabilityFixedP(n, P);
+    cout << "La probabilidad de que Informáticos CB gane el play-off es: " << result << std::endl;
+
+    return 0;
+}
+
+############### Problema 04
+
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+vector<int> incrementocreciente(vector<int> V) {
+    int n = V.size();
+    vector<int> dp(n, 1), parent(n, -1), lis;
+
+    int max_length = 1, end_index = 0;
+
+    for (int i = 1; i < n; i++) {
+        for (int j = 0; j < i; j++) {
+            if (V[i] > V[j] && dp[i] < dp[j] + 1) {
+                dp[i] = dp[j] + 1;
+                parent[i] = j;
+            }
+        }
+
+        if (dp[i] > max_length) {
+            max_length = dp[i];
+            end_index = i;
+        }
+    }
+
+    for (int i = end_index; i != -1; i = parent[i])
+        lis.push_back(V[i]);
+
+    reverse(lis.begin(), lis.end());
+
+    return lis;
+}
+
+int main() {
+    vector<int> V = { 11, 17, 5, 8, 6, 4, 7, 12, 3 };
+    vector<int> lis = incrementocreciente(V);
+
+    for (int i : lis)
+        cout << i << " ";
+    cout << endl;
+
+    return 0;
+}
+
+############### Problema 05
+
+#include <iostream>
+#include <vector>
+#include <limits.h>
+
+using namespace std;
+
+const int INF = INT_MAX;
+
+int tsp(int mask, int pos, vector<vector<int>>& dist, vector<vector<int>>& dp, int n) {
+    if (mask == (1 << n) - 1) {
+        return dist[pos][0]; // Vuelve al nodo de inicio
+    }
+    if (dp[mask][pos] != -1) {
+        return dp[mask][pos];
+    }
+    int ans = INF;
+    for (int city = 0; city < n; city++) {
+        if ((mask & (1 << city)) == 0) {
+            int newAns = dist[pos][city] + tsp(mask | (1 << city), city, dist, dp, n);
+            ans = min(ans, newAns);
+        }
+    }
+    return dp[mask][pos] = ans;
+}
+
+int main() {
+    int n;
+    cout << "Ingrese el número de nodos: ";
+    cin >> n;
+    
+    vector<vector<int>> dist(n, vector<int>(n));
+    cout << "Ingrese la matriz de distancias: " << endl;
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            cin >> dist[i][j];
+        }
+    }
+    
+    vector<vector<int>> dp(1 << n, vector<int>(n, -1));
+    cout << "La longitud del circuito hamiltoniano minimal es: " << tsp(1, 0, dist, dp, n) << endl;
+
+    return 0;
+}
+
+
+############### Problema 06
+#include <iostream>
+#include <vector>
+#include <unordered_map>
+
+using namespace std;
+
+unordered_map<char, unordered_map<char, char>> multiplicacion = {// Multiplicacion de tabla
+    {'a', {{'a', 'b'}, {'b', 'b'}, {'c', 'a'}}},
+    {'b', {{'a', 'c'}, {'b', 'b'}, {'c', 'a'}}},
+    {'c', {{'a', 'a'}, {'b', 'c'}, {'c', 'c'}}}
+};
+
+bool multi(string V, char target) {
+    int n = V.size();
+    vector<vector<vector<bool>>> dp(n, vector<vector<bool>>(n, vector<bool>(3, false)));
+
+    for (int i = 0; i < n; i++)
+        dp[i][i][V[i] - 'a'] = true;
+
+    for (int len = 2; len <= n; len++) {
+        for (int i = 0; i <= n - len; i++) {
+            int j = i + len - 1;
+            for (int k = i; k < j; k++) {
+                for (int x = 0; x < 3; x++) {
+                    if (!dp[i][k][x]) continue;
+                    for (int y = 0; y < 3; y++) {
+                        if (!dp[k + 1][j][y]) continue;
+                        int z = multiplicacion['a' + x]['a' + y] - 'a';
+                        dp[i][j][z] = true;
+                    }
+                }
+            }
+        }
+    }
+
+    return dp[0][n - 1][target - 'a'];
+}
+
+int main() {
+    string V = "abcabc";
+    char target = 'a';
+    cout << (multi(V, target) ? "True" : "False") << endl;
+
+    return 0;
+}
+
+
+############### Problema 07
+#include <iostream>
+#include <vector>
+#include <limits.h>
+
+using namespace std;
+
+// Función para calcular el costo mínimo de unir los eslabones
+int minChainCost(vector<int>& p) {
+    int n = p.size();
+    vector<vector<int>> dp(n, vector<int>(n, 0));
+
+    // Llenar la tabla dp
+    for (int length = 2; length < n; length++) {
+        for (int i = 0; i < n - length; i++) {
+            int j = i + length;
+            dp[i][j] = INT_MAX;
+            for (int k = i + 1; k < j; k++) {
+                int cost = dp[i][k] + dp[k][j] + p[i] + p[j - 1] + p[k];
+                if (cost < dp[i][j]) {
+                    dp[i][j] = cost;
+                }
+            }
+        }
+    }
+
+    return dp[0][n - 1];
+}
+
+int main() {
+    int n;
+    cout << "Ingrese el número de eslabones: ";
+    cin >> n;
+
+    vector<int> p(n);
+    cout << "Ingrese los pesos de los eslabones: ";
+    for (int i = 0; i < n; i++) {
+        cin >> p[i];
+    }
+
+    cout << "El costo mínimo para unir todos los eslabones es: " << minChainCost(p) << endl;
+
+    return 0;
+}
+
+############### Problema 08
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+// Function to find the maximum benefit
+int maximizeBenefit(const vector<vector<int>>& benefit, int n, int r) {
+    // Create a 2D array to store the maximum benefit
+    vector<vector<int>> dp(r + 1, vector<int>(n + 1, 0));
+
+    // Fill the dp array
+    for (int i = 1; i <= r; ++i) {
+        for (int j = 0; j <= n; ++j) {
+            dp[i][j] = dp[i - 1][j];  // No resource allocated to the i-th project
+            for (int k = 0; k <= j; ++k) {
+                dp[i][j] = max(dp[i][j], dp[i - 1][j - k] + benefit[i - 1][k]);
+            }
+        }
+    }
+
+    // The maximum benefit is found in dp[r][n]
+    return dp[r][n];
+}
+
+int main() {
+    // Define the number of units of resource and projects
+    int n = 5;  // Number of units
+    int r = 3;  // Number of projects
+
+    // Define the benefit matrix
+    vector<vector<int>> benefit = {
+        {0, 3, 6, 8, 9, 12},
+        {0, 2, 4, 7, 9, 10},
+        {0, 1, 3, 5, 8, 10}
+    };
+
+    // Find and print the maximum benefit
+    int maxBenefit = maximizeBenefit(benefit, n, r);
+    cout << "Maximum Benefit: " << maxBenefit << endl;
+
+    return 0;
+}
+
+############### Problema 09
+#include <iostream>
+#include <vector>
+#include <limits.h>
+#include <algorithm>
+
+using namespace std;
+
+// Función para encontrar el camino de coste mínimo en un grafo multitapa
+int shortestPath(vector<vector<pair<int, int>>>& graph, int stages) {
+    int n = graph.size();
+    vector<int> cost(n, INT_MAX);  // Almacenar los costos mínimos
+    vector<int> path(n, -1);       // Almacenar el camino
+    cost[0] = 0;                   // El costo desde el origen a sí mismo es 0
+
+    // Calcular los costos mínimos para cada vértice en cada etapa
+    for (int stage = 1; stage < stages; ++stage) {
+        for (int u = 0; u < n; ++u) {
+            for (auto& edge : graph[u]) {
+                int v = edge.first;
+                int weight = edge.second;
+                if (cost[u] != INT_MAX && cost[u] + weight < cost[v]) {
+                    cost[v] = cost[u] + weight;
+                    path[v] = u;
+                }
+            }
+        }
+    }
+
+    // Imprimir el camino
+    vector<int> result;
+    for (int v = n - 1; v != -1; v = path[v]) {
+        result.push_back(v);
+    }
+    reverse(result.begin(), result.end());
+
+    cout << "Camino de coste mínimo: ";
+    for (int v : result) {
+        cout << v << " ";
+    }
+    cout << endl;
+
+    return cost[n - 1];
+}
+
+int main() {
+    int stages = 5;  // Número de etapas
+    int n = 11;      // Número de vértices
+    vector<vector<pair<int, int>>> graph(n);
+
+    // Representación del grafo (vértice, peso)
+    graph[0] = {{1, 5}, {2, 3}};
+    graph[1] = {{3, 6}, {4, 7}};
+    graph[2] = {{4, 4}, {5, 2}};
+    graph[3] = {{6, 2}};
+    graph[4] = {{6, 3}, {7, 4}};
+    graph[5] = {{7, 1}};
+    graph[6] = {{8, 4}};
+    graph[7] = {{8, 2}, {9, 3}};
+    graph[8] = {{10, 2}};
+    graph[9] = {{10, 2}};
+
+    cout << "El coste mínimo desde el origen al destino es: " << shortestPath(graph, stages) << endl;
+
+    return 0;
+}
+
+################### Problema 10
+
+
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+int minAssemblyTime(vector<vector<int>>& a, vector<vector<int>>& t, vector<int>& e, vector<int>& x, int n) {
+    vector<int> T1(n), T2(n);
+
+    // Initialize base cases
+    T1[0] = e[0] + a[0][0];
+    T2[0] = e[1] + a[1][0];
+
+    // Fill tables T1[] and T2[] using the given relationships
+    for (int i = 1; i < n; ++i) {
+        T1[i] = min(T1[i - 1] + a[0][i], T2[i - 1] + t[1][i] + a[0][i]);
+        T2[i] = min(T2[i - 1] + a[1][i], T1[i - 1] + t[0][i] + a[1][i]);
+    }
+
+    // Consider exit times and return the minimum
+    return min(T1[n - 1] + x[0], T2[n - 1] + x[1]);
+}
+
+int main() {
+    int n = 6;  // Number of stations
+
+    vector<vector<int>> a = {
+        {7, 9, 3, 4, 8, 4},
+        {8, 5, 6, 4, 5, 7}
+    };
+
+    vector<vector<int>> t = {
+        {0, 2, 3, 1, 3, 4},  // Transfer times from line 1 to line 2
+        {0, 2, 1, 2, 2, 1}   // Transfer times from line 2 to line 1
+    };
+
+    vector<int> e = { 2, 4 };  // Entry times
+    vector<int> x = { 3, 2 };  // Exit times
+
+    cout << "Minimum time: " << minAssemblyTime(a, t, e, x, n) << endl;
+
+    return 0;
+}
+
+################# Problema 11
+#include <iostream>
+#include <vector>
+#include <cmath>
+#include <algorithm>
+
+using namespace std;
+
+// Función para calcular la fiabilidad de una fase con k dispositivos en paralelo
+double fiabilidadFase(double r, int k) {
+    return 1.0 - pow(1.0 - r, k);
+}
+
+// Función para maximizar la fiabilidad del sistema con una limitación de coste
+double maximizarFiabilidad(vector<double>& r, vector<int>& c, int n, int C) {
+    vector<vector<double>> dp(n + 1, vector<double>(C + 1, 0.0));
+
+    // Llenar la tabla DP
+    for (int i = 1; i <= n; ++i) {
+        for (int j = 0; j <= C; ++j) {
+            dp[i][j] = dp[i - 1][j]; // No usar dispositivos en la fase i
+            for (int k = 1; k * c[i - 1] <= j; ++k) {
+                dp[i][j] = max(dp[i][j], dp[i - 1][j - k * c[i - 1]] * fiabilidadFase(r[i - 1], k));
+            }
+        }
+    }
+
+    return dp[n][C];
+}
+
+int main() {
+    int n; // Número de fases
+    int C; // Coste total permitido
+
+    cout << "Ingrese el número de fases: ";
+    cin >> n;
+    cout << "Ingrese el coste total permitido: ";
+    cin >> C;
+
+    vector<double> r(n);
+    vector<int> c(n);
+
+    cout << "Ingrese las fiabilidades de los dispositivos: ";
+    for (int i = 0; i < n; ++i) {
+        cin >> r[i];
+    }
+
+    cout << "Ingrese los costes de los dispositivos: ";
+    for (int i = 0; i < n; ++i) {
+        cin >> c[i];
+    }
+
+    double fiabilidadMaxima = maximizarFiabilidad(r, c, n, C);
+    cout << "La máxima fiabilidad del sistema con el coste dado es: " << fiabilidadMaxima << endl;
+
+    return 0;
+}
+
+
+################# Problema 12
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+int minAssemblyTime(vector<vector<int>>& a, vector<vector<int>>& t, vector<int>& e, vector<int>& x, int n) {
+    vector<int> T1(n), T2(n);
+
+    // Initialize base cases
+    T1[0] = e[0] + a[0][0];
+    T2[0] = e[1] + a[1][0];
+
+    // Fill tables T1[] and T2[] using the given relationships
+    for (int i = 1; i < n; ++i) {
+        T1[i] = min(T1[i - 1] + a[0][i], T2[i - 1] + t[1][i] + a[0][i]);
+        T2[i] = min(T2[i - 1] + a[1][i], T1[i - 1] + t[0][i] + a[1][i]);
+    }
+
+    // Consider exit times and return the minimum
+    return min(T1[n - 1] + x[0], T2[n - 1] + x[1]);
+}
+
+int main() {
+    int n = 6;  // Number of stations
+
+    vector<vector<int>> a = {
+        {7, 9, 3, 4, 8, 4},
+        {8, 5, 6, 4, 5, 7}
+    };
+
+    vector<vector<int>> t = {
+        {0, 2, 3, 1, 3, 4},  // Transfer times from line 1 to line 2
+        {0, 2, 1, 2, 2, 1}   // Transfer times from line 2 to line 1
+    };
+
+    vector<int> e = { 2, 4 };  // Entry times
+    vector<int> x = { 3, 2 };  // Exit times
+
+    cout << "Minimum time: " << minAssemblyTime(a, t, e, x, n) << endl;
+
+    return 0;
+}
+
+################# Problema 13
+#include <iostream>
+#include <vector>
+#include <limits.h>
+
+using namespace std;
+
+// Estructura para representar un borde en el grafo
+struct Edge {
+    int src, dest, weight;
+};
+
+// Función para detectar ciclos negativos usando el algoritmo de Bellman-Ford
+bool detectNegativeCycle(int vertices, vector<Edge>& edges) {
+    vector<int> dist(vertices, INT_MAX);
+    dist[0] = 0; // Iniciamos desde el nuevo nodo
+
+    // Relajar todas las aristas |V|-1 veces
+    for (int i = 1; i <= vertices - 1; i++) {
+        for (const auto& edge : edges) {
+            if (dist[edge.src] != INT_MAX && dist[edge.src] + edge.weight < dist[edge.dest]) {
+                dist[edge.dest] = dist[edge.src] + edge.weight;
+            }
+        }
+    }
+
+    // Verificar ciclos negativos
+    for (const auto& edge : edges) {
+        if (dist[edge.src] != INT_MAX && dist[edge.src] + edge.weight < dist[edge.dest]) {
+            return true; // Se encontró un ciclo negativo
+        }
+    }
+
+    return false;
+}
+
+int main() {
+    int V, E;
+    cout << "Ingrese el número de nodos: ";
+    cin >> V;
+    cout << "Ingrese el número de aristas: ";
+    cin >> E;
+
+    vector<Edge> edges(E + V);
+
+    cout << "Ingrese las aristas (formato: src dest weight):" << endl;
+    for (int i = 0; i < E; i++) {
+        cin >> edges[i].src >> edges[i].dest >> edges[i].weight;
+    }
+
+    // Añadir el nuevo nodo y las aristas de coste 0
+    for (int i = 0; i < V; i++) {
+        edges[E + i] = {V, i, 0};
+    }
+
+    if (detectNegativeCycle(V + 1, edges)) {
+        cout << "El grafo contiene un ciclo negativo." << endl;
+    } else {
+        cout << "El grafo no contiene ciclos negativos." << endl;
+    }
+
+    return 0;
+}
+
+
+################# Problema 14
+################# Problema 15
+#include <iostream>
+#include <vector>
+#include <limits.h>
+
+using namespace std;
+
+// Función para calcular el ABB óptimo
+double optimalBST(vector<double>& p, vector<double>& q, int n, vector<vector<double>>& e, vector<vector<int>>& root) {
+    vector<vector<double>> w(n + 2, vector<double>(n + 1, 0));
+    
+    for (int i = 1; i <= n + 1; ++i) {
+        e[i][i - 1] = q[i - 1];
+        w[i][i - 1] = q[i - 1];
+    }
+    
+    for (int l = 1; l <= n; ++l) {
+        for (int i = 1; i <= n - l + 1; ++i) {
+            int j = i + l - 1;
+            e[i][j] = INT_MAX;
+            w[i][j] = w[i][j - 1] + p[j - 1] + q[j];
+            for (int r = i; r <= j; ++r) {
+                double t = e[i][r - 1] + e[r + 1][j] + w[i][j];
+                if (t < e[i][j]) {
+                    e[i][j] = t;
+                    root[i][j] = r;
+                }
+            }
+        }
+    }
+    
+    return e[1][n];
+}
+
+// Función para imprimir el ABB óptimo
+void printOptimalBST(vector<vector<int>>& root, int i, int j, int parent, bool left) {
+    if (i > j) {
+        if (left) {
+            cout << "d" << parent << " izquierda: NULL" << endl;
+        } else {
+            cout << "d" << parent << " derecha: NULL" << endl;
+        }
+        return;
+    }
+    int r = root[i][j];
+    if (parent == -1) {
+        cout << "Root: k" << r << endl;
+    } else if (left) {
+        cout << "k" << parent << " izquierda: k" << r << endl;
+    } else {
+        cout << "k" << parent << " derecha: k" << r << endl;
+    }
+    printOptimalBST(root, i, r - 1, r, true);
+    printOptimalBST(root, r + 1, j, r, false);
+}
+
+int main() {
+    int n;
+    cout << "Ingrese el número de claves: ";
+    cin >> n;
+    
+    vector<double> p(n);
+    vector<double> q(n + 1);
+    
+    cout << "Ingrese las probabilidades de acceso p_i: ";
+    for (int i = 0; i < n; ++i) {
+        cin >> p[i];
+    }
+    
+    cout << "Ingrese las probabilidades de acceso infructuoso q_i: ";
+    for (int i = 0; i <= n; ++i) {
+        cin >> q[i];
+    }
+    
+    vector<vector<double>> e(n + 2, vector<double>(n + 1, 0));
+    vector<vector<int>> root(n + 1, vector<int>(n + 1, 0));
+    
+    double coste = optimalBST(p, q, n, e, root);
+    
+    cout << "El coste mínimo esperado es: " << coste << endl;
+    cout << "El árbol binario de búsqueda óptimo es:" << endl;
+    printOptimalBST(root, 1, n, -1, false);
+    
+    return 0;
+}
+
